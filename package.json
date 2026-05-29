@@ -1,0 +1,20 @@
+{
+  "name": "@pipeworx/mcp-boe-uk",
+  "version": "0.1.0",
+  "description": "Bank of England Interactive Statistical Database (IADB) MCP.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "keywords": ["mcp", "mcp-server", "model-context-protocol", "pipeworx", "boe-uk"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pipeworx-io/mcp-boe-uk"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
