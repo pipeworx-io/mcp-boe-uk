@@ -2,12 +2,13 @@
 
 Bank of England Interactive Statistical Database (IADB) MCP.
 
-Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 673+ live data sources.
+Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1394+ live data sources.
 
 ## Tools
 
 | Tool | Description |
 |------|-------------|
+| `get_series` | Fetch one or more Bank of England IADB series by code over a date range. Requires BoE series codes (e.g. IUDBEDR = Bank Rate, IUDSOIA = SONIA, XUDLUSS = USD/GBP, XUDLERS = EUR/GBP). Use list_known_series or the convenience tools (bank_rate, sonia, usd_gbp, eur_gbp) if you do not know the code. Returns parsed JSON: one entry per series with observations [{date, value}]. |
 | `bank_rate` | Latest N observations of the Bank of England official Bank Rate (series IUDBEDR), most recent first. |
 | `sonia` | Latest N observations of SONIA, the Sterling Overnight Index Average (series IUDSOIA), most recent first. |
 | `usd_gbp` | Latest N observations of the USD/GBP spot rate — US$ per £1 (series XUDLUSS), most recent first. |
@@ -28,7 +29,7 @@ Add to your MCP client (Claude Desktop, Cursor, Windsurf, etc.):
 }
 ```
 
-Or connect to the full Pipeworx gateway for access to all 673+ data sources:
+Or connect to the full Pipeworx gateway for access to all 1394+ data sources:
 
 ```json
 {
@@ -52,7 +53,7 @@ The gateway picks the right tool and fills the arguments automatically.
 
 ## More
 
-- [All tools and guides](https://github.com/pipeworx-io/examples)
+- [Docs and guides](https://pipeworx.io/docs)
 - [pipeworx.io](https://pipeworx.io)
 
 ## License
