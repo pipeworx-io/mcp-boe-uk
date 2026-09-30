@@ -783,7 +783,17 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
       const from = normalizeDate(reqStr(args, 'from', '"01/Jan/2024"'));
       const to = normalizeDate((args.to as string | undefined) ?? 'now');
       const series = await fetchSeries(codes, from, to);
-      return { series };
+      // IADB answers a range with no data (e.g. XUDLUSS in 1964 — that series
+      // starts 1975) with a header-only 200. Say so rather than hand back a
+      // bare empty array that reads as "no data exists".
+      const empty = series.filter((s) => s.observations.length === 0).map((s) => s.seriesCode);
+      if (empty.length === 0) return { series };
+      return {
+        series,
+        note:
+          `No observations between ${from} and ${to} for ${empty.join(', ')}. The Bank of England returned no rows for that range — ` +
+          'the series may start later or end earlier than the range asked for. Widen "from"/"to" (e.g. to "now") to see its coverage.',
+      };
     }
 
     case 'bank_rate':
@@ -820,13 +830,47 @@ async function fetchSeries(codes: string[], from: string, to: string): Promise<P
     VPD: 'Y',
     VFD: 'N',
   });
+  const url = `${BASE}?${params.toString()}`;
   // redirect: 'manual' — a bad/unknown series code 302-redirects to an HTML error page;
   // following it would yield a deceptive 200. Treat the redirect as an error instead.
-  const res = await pwFetch(`${BASE}?${params.toString()}`, {
+  const fetchOnce = () => pwFetch(url, {
     headers: { Accept: 'text/csv', 'User-Agent': UA },
     redirect: 'manual',
   });
+
+  // Fleet #2511: the IADB origin itself intermittently answers with its own
+  // HTTP 500 "Sorry" error page — reproduced 2026-09-29 with plain curl
+  // straight against www.bankofengland.co.uk (no Cloudflare in the path), for
+  // a heavier query (multiple series codes over a wide date range, e.g. the
+  // full history of Bank Rate + SONIA + both FX pairs since 1975). The
+  // byte-identical request succeeded on every immediate retry, and AE shows
+  // the failures cluster in a UK-morning UTC window (09:00-10:00 on 09-29,
+  // 100% upstream_down that hour) consistent with the IADB doing its daily
+  // data refresh. Either way this is upstream flakiness, not a Cloudflare
+  // egress/UA block — curl and the Worker hit the exact same failure and the
+  // exact same recovery. Retry a 5xx up to twice with a short backoff; a
+  // genuine outage still surfaces as upstream_down after the third attempt.
+  let res = await fetchOnce();
+  for (let attempt = 0; res.status >= 500 && attempt < 2; attempt++) {
+    await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+    res = await fetchOnce();
+  }
   const body = await res.text();
+  // Fleet #2511, second half: the retry above does not cover it. Measured
+  // 2026-09-29 18:55-19:10Z, the gateway got this 500 page on EVERY call for
+  // minutes at a time (populated ranges included, e.g. IUDBEDR Jan-2024), while
+  // the byte-identical request from a laptop and from a throwaway Worker with
+  // the gateway's own compat settings got 200 18/18 in the same minutes. So it
+  // is windowed and specific to our egress, not the caller's arguments. Say
+  // that instead of pasting the first 200 bytes of BoE's HTML error page,
+  // which reads like a malformed-request echo and invites argument rewrites.
+  if (res.status >= 500) {
+    throw new Error(
+      `upstream_down: the Bank of England statistics server (IADB) answered HTTP ${res.status} with its error page. ` +
+        'This happens in windows of a few minutes for requests from our servers, even while the same query succeeds elsewhere; ' +
+        'your arguments are not the cause. Retry the identical call in a few minutes.',
+    );
+  }
   if (!res.ok || res.status >= 300) {
     throw new Error(`BoE: ${res.status} ${body.slice(0, 200)}`);
   }
