@@ -2,14 +2,14 @@
 
 Bank of England Interactive Statistical Database (IADB) MCP.
 
-Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1684+ live data sources.
+Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1819+ live data sources. This is an independent, unofficial integration — not affiliated with, endorsed by, or published by the upstream provider.
 
 ## Tools
 
 | Tool | Description |
 |------|-------------|
 | `get_series` | Fetch one or more Bank of England IADB series by code over a date range. Requires BoE series codes (e.g. IUDBEDR = Bank Rate, IUDSOIA = SONIA, XUDLUSS = USD/GBP, XUDLERS = EUR/GBP). Use list_known_series or the convenience tools (bank_rate, sonia, usd_gbp, eur_gbp) if you do not know the code. Returns parsed JSON: one entry per series with observations [{date, value}]. |
-| `bank_rate` | Latest N observations of the Bank of England official Bank Rate (series IUDBEDR), most recent first. |
+| `bank_rate` | The Bank of England's official Bank Rate: the current rate, the date it took effect, the previous rate and when that one took effect, plus recent decision history (series IUDBEDR) — not just a raw observations list to infer a decision date from. Also returns the last N daily observations. |
 | `sonia` | Latest N observations of SONIA, the Sterling Overnight Index Average (series IUDSOIA), most recent first. |
 | `usd_gbp` | Latest N observations of the USD/GBP spot rate — US$ per £1 (series XUDLUSS), most recent first. |
 | `eur_gbp` | Latest N observations of the EUR/GBP spot rate — € per £1 (series XUDLERS), most recent first. |
@@ -59,7 +59,7 @@ directly, instead of just this one's:
 }
 ```
 
-Both URLs reach the same gateway and the same 1684+ data sources. The
+Both URLs reach the same gateway and the same 1819+ data sources. The
 only difference is which pack's tools are listed **directly**; `ask_pipeworx`
 reaches all of them from either one.
 

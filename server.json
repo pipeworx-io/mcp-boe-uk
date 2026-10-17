@@ -3,7 +3,7 @@
   "name": "io.github.pipeworx-io/boe-uk",
   "title": "Boe Uk",
   "description": "Bank of England Interactive Statistical Database (IADB) MCP.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "websiteUrl": "https://pipeworx.io/packs/boe-uk",
   "repository": {
     "url": "https://github.com/pipeworx-io/mcp-boe-uk",

@@ -1,6 +1,6 @@
 {
   "name": "@pipeworx/mcp-boe-uk",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Bank of England Interactive Statistical Database (IADB) MCP.",
   "type": "module",
   "main": "src/index.ts",
@@ -26,7 +26,7 @@
     "@cloudflare/workers-types": "^4.20260405.1"
   },
   "pipeworx": {
-    "sourceHash": "v1-ff0c65cb37ff7a37832b799897df5b738c839a3762b158b5f2c8a11e58900788",
-    "sourceCommit": "75807802b8970530892c4a91635be352945ff935"
+    "sourceHash": "v1-bbeba3058eb0793578711bed5c508eb502072589e593d5813eef780e7b3a35ed",
+    "sourceCommit": "f5821587e59206a76fc200d1b9cbeaad15a549ab"
   }
 }

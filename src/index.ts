@@ -728,7 +728,10 @@ const tools: McpToolExport['tools'] = [
   },
   {
     name: 'bank_rate',
-    description: 'Latest N observations of the Bank of England official Bank Rate (series IUDBEDR), most recent first.',
+    description:
+      "The Bank of England's official Bank Rate: the current rate, the date it took effect, the previous rate " +
+      "and when that one took effect, plus recent decision history (series IUDBEDR) — not just a raw " +
+      'observations list to infer a decision date from. Also returns the last N daily observations.',
     inputSchema: {
       type: 'object',
       properties: { last: { type: 'number', description: 'Number of most-recent observations (default 10).' } },
@@ -796,7 +799,49 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
       };
     }
 
-    case 'bank_rate':
+    case 'bank_rate': {
+      const { code } = KNOWN_SERIES.bank_rate;
+      const last = clampLast(args.last);
+      // Wide range so the computed current/previous-rate fields below are never
+      // truncated by the fetch window — Bank Rate holds for months at a time.
+      const series = await fetchSeries([code], '01/Jan/2015', 'now');
+      const obs = series[0]?.observations ?? [];
+      const latest = obs.slice(-last).reverse();
+      if (obs.length === 0) {
+        return {
+          error: 'no_data',
+          message: `The Bank of England returned no observations for Bank Rate (series ${code}). Try get_series with a wider date range.`,
+        };
+      }
+      // obs is ascending by date (parseCsv preserves CSV row order, which the
+      // IADB returns chronologically). Walk forward and record each change —
+      // the same "current + effective_since + previous" shape as the Norges
+      // Bank fix (fleet #3204), so a caller does not have to infer the
+      // decision date from a bare observations list.
+      const changes: { rate: number; effective_since: string }[] = [
+        { rate: obs[0].value, effective_since: obs[0].date },
+      ];
+      for (let i = 1; i < obs.length; i++) {
+        if (obs[i].value !== changes[changes.length - 1].rate) {
+          changes.push({ rate: obs[i].value, effective_since: obs[i].date });
+        }
+      }
+      const current = changes[changes.length - 1];
+      const previous = changes.length > 1 ? changes[changes.length - 2] : null;
+      return {
+        seriesCode: code,
+        indicator: 'bank_rate',
+        rate: current.rate,
+        unit: 'percent',
+        effective_since: current.effective_since,
+        previous_rate: previous?.rate ?? null,
+        previous_rate_effective_since: previous?.effective_since ?? null,
+        decision_history: changes.slice(-5).reverse(),
+        data_as_of: obs[obs.length - 1].date,
+        observations: latest,
+      };
+    }
+
     case 'sonia':
     case 'usd_gbp':
     case 'eur_gbp': {
