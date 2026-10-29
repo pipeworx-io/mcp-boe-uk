@@ -1,12 +1,20 @@
 {
   "name": "@pipeworx/mcp-boe-uk",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "Bank of England Interactive Statistical Database (IADB) MCP.",
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./tools.json": "./tools.json",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "mcp-boe-uk": "bin/cli.js"
+  },
+  "files": ["bin/", "lib/", "tools.json", "server.json"],
+  "engines": {
+    "node": ">=18"
   },
   "keywords": ["mcp", "mcp-server", "model-context-protocol", "pipeworx", "boe-uk"],
   "license": "MIT",
@@ -14,19 +22,12 @@
     "type": "git",
     "url": "git+https://github.com/pipeworx-io/mcp-boe-uk.git"
   },
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "tsx": "^4.19.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3",
-    "@cloudflare/workers-types": "^4.20260405.1"
-  },
+  "mcpName": "io.github.pipeworx-io/boe-uk",
   "pipeworx": {
-    "sourceHash": "v1-eb21c45b77fc882ab842f50f571728402201f74b8630e59fa2e42f557f24bfa9",
-    "sourceCommit": "70a4e816a9195016cd4af92dca2019485d4c3865"
+    "mode": "gateway",
+    "slug": "boe-uk",
+    "gatewaySlug": "boe-uk",
+    "sourceHash": "v1-f28c07dc066fa50d8aaaf3bd11cfeefa35700fb5862aa35186aca112d9f68775",
+    "sourceCommit": "4277282d72f9bf55e548b3799aaf737baf22152f"
   }
 }
